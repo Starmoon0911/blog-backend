@@ -1,6 +1,20 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
+import logger from "../utils/logger";
 
-// Create a single supabase client for interacting with your database
-const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SECRET_KEY as string)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+if (!supabaseUrl) {
+  throw new Error("SUPABASE_URL is missing");
+}
+
+if (!supabaseSecretKey) {
+  throw new Error("SUPABASE_SECRET_KEY is missing");
+}
+
+const supabase = createClient(
+  supabaseUrl,
+  supabaseSecretKey,
+);
 
 export default supabase;

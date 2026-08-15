@@ -2,7 +2,7 @@ import pino from "pino";
 
 const logger = pino({
   transport: {
-    level:process.env.LEVEL as string || 'info',
+    level: "debug", //process.env.LEVEL as string || 'info',
     target: "pino-pretty",
     options:{
         colorize:true
