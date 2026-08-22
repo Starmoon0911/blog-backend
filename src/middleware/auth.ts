@@ -10,7 +10,7 @@ export async function authMiddleware(request: Request) {
     };
   }
 
-  const token = authorization.slice(7);
+  const token = authorization.replace("Bearer ", "");
 
   const {
     data: { user },
