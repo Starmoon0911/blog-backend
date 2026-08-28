@@ -1,11 +1,11 @@
 import { type Request, type Response } from "express";
 import supabase from "../database/supabase";
-import { BadRequestError } from "../utils/Error";
+import { AppError, BadRequestError } from "../utils/Error";
 import logger from "../utils/logger";
 export async function login(req: Request, res: Response) {
   const { username, password } = req.body;
   if (!username || !password) {
-    throw new BadRequestError("Username or Password must be required.");
+    throw new BadRequestError("Username or Password is required.");
   }
   const { data: userId, error: userError } = await supabase
     .from("user_profiles")
@@ -28,9 +28,11 @@ export async function login(req: Request, res: Response) {
       email: user?.email,
       password: password,
     });
-
+  if (LoginError?.code === "invalid_credentials") {
+    throw new BadRequestError("Invalid username or password");
+  }
   if (LoginError) {
-    throw new Error(LoginError.message);
+    throw new AppError(500, LoginError.message);
   }
   res.status(200).json({
     token: LoginData.session.access_token,
