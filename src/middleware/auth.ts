@@ -1,31 +1,32 @@
-import supabase from "../database/supabase";
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+import { supabaseAdmin } from "../database/supabase";
+import { UnauthorizedError } from "../utils/Error";
 
-export async function authMiddleware(request: Request) {
-  const authorization = request.headers.get("Authorization");
-
-  if (!authorization?.startsWith("Bearer ")) {
-    return {
-      user: null,
-      error: "Unauthorized",
-    };
+// Augment Express Request with optional user
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: { id: string; email?: string | null } | null;
   }
-
-  const token = authorization.replace("Bearer ", "");
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-
-  if (error || !user) {
-    return {
-      user: null,
-      error: "Unauthorized",
-    };
-  }
-
-  return {
-    user,
-    error: null,
-  };
 }
+
+export const requireAuth: RequestHandler = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const authorization = req.headers.authorization;
+    if (!authorization?.startsWith("Bearer ")) {
+      throw new UnauthorizedError("Missing Bearer token");
+    }
+    const token = authorization.replace("Bearer ", "");
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !data.user) {
+      throw new UnauthorizedError("Invalid token");
+    }
+    req.user = { id: data.user.id, email: data.user.email ?? null };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
