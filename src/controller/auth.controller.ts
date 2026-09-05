@@ -2,15 +2,18 @@ import { type Request, type Response } from "express";
 import supabase from "../database/supabase";
 import { AppError, BadRequestError } from "../utils/Error";
 import logger from "../utils/logger";
+
 export async function login(req: Request, res: Response) {
   const { username, password } = req.body;
+
   if (!username || !password) {
     throw new BadRequestError("Username or Password is required.");
   }
+
   const { data: userId, error: userError } = await supabase
     .from("user_profiles")
     .select("id")
-    .eq("username", username)
+    .eq("username", username) 
     .single();
 
   if (userError || !userId) {
@@ -36,5 +39,6 @@ export async function login(req: Request, res: Response) {
   }
   res.status(200).json({
     token: LoginData.session.access_token,
+    user: LoginData.user
   });
 }

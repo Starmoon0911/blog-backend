@@ -1,20 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { env } from "../config/env";
 import logger from "../utils/logger";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+const adminClient: SupabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+const anonClient: SupabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
-if (!supabaseUrl) {
-  throw new Error("SUPABASE_URL is missing");
-}
+logger.debug({ url: env.SUPABASE_URL }, "supabase clients initialized");
 
-if (!supabaseSecretKey) {
-  throw new Error("SUPABASE_SECRET_KEY is missing");
-}
-
-const supabase = createClient(
-  supabaseUrl,
-  supabaseSecretKey,
-);
-
-export default supabase;
+export const supabaseAdmin = adminClient;
+export const supabaseAnon = anonClient;
+export default adminClient;
