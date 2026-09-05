@@ -1,5 +1,6 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { AppError } from "../utils/Error";
+import logger from "../utils/logger";
 
 export function errorHandler(
   err: unknown,
@@ -13,7 +14,7 @@ export function errorHandler(
     });
   }
 
-
+  logger.error({ err }, "unhandled error");
   return res.status(500).json({
     message: "Internal server error",
   });
